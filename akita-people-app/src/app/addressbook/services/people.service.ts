@@ -11,7 +11,7 @@ export class PeopleService {
   http: HttpClient;
   // create your own mock api addressbook containing
   // id, lastname, firstname, phone
-  apiURL = 'https://620e616c585fbc3359e05f1a.mockapi.io';
+  apiURL = 'https://6214ccd989fad53b1f1f6e2f.mockapi.io';
   store: PeopleStore;
 
   constructor(http: HttpClient, store: PeopleStore) {
@@ -21,25 +21,31 @@ export class PeopleService {
 
   getAllPeople(): Observable<People[]> {
     return this.http
-      .get<People[]>(this.apiURL + '/api/vi/people?sortBy=lastname')
-      .pipe(tap((people) => console.log(JSON.stringify(people))));
+      .get<People[]>(this.apiURL + '/people?sortBy=lastname')
+      .pipe(tap((people) => this.store.loadPeople(people, true)));
   }
 
   createPerson(people: People): Observable<People> {
-    return this.http
-      .post<People>(this.apiURL + '/api/vi/people', people)
-      .pipe(tap((value) => {}));
+    return this.http.post<People>(this.apiURL + '/people', people).pipe(
+      tap((person) => {
+        this.store.add([person]);
+      })
+    );
   }
 
   deletePerson(personId: string): Observable<any> {
-    return this.http
-      .delete(this.apiURL + '/api/vi/people/' + personId)
-      .pipe(tap((result) => {}));
+    return this.http.delete(this.apiURL + '/people/' + personId).pipe(
+      tap((result) => {
+        this.store.remove(personId);
+      })
+    );
   }
 
   updatePerson(personId: string, person: People): Observable<any> {
-    return this.http
-      .put(this.apiURL + '/api/vi/people/' + personId, person)
-      .pipe(tap((result) => {}));
+    return this.http.put(this.apiURL + '/people/' + personId, person).pipe(
+      tap((result) => {
+        this.store.update(personId, person);
+      })
+    );
   }
 }
